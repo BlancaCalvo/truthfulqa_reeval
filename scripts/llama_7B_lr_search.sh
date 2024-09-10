@@ -30,7 +30,7 @@ for LR in 5e-6 1e-5 5e-5; do
             --preprocessing_num_workers 64 \
             --per_device_train_batch_size $BATCH_SIZE_PER_GPU \
             --gradient_accumulation_steps $GRADIENT_ACC_STEPS \
-            --learning_rate 5e-6 \
+            --learning_rate $LR \
             --lr_scheduler_type linear \
             --warmup_ratio 0.03 \
             --weight_decay 0. \

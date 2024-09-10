@@ -374,10 +374,17 @@ def main():
         logger.info("Training new model from scratch")
         model = AutoModelForCausalLM.from_config(config)
 
+    if tokenizer.pad_token is None:
+        logger.info("added pad in the new lines")
+        logger.info(type(tokenizer))
+        tokenizer.add_special_tokens({'pad_token': "<pad>"})
+        model.resize_token_embeddings(len(tokenizer))
+
 
     # no default pad token for llama!
     # here we add all special tokens again, because the default ones are not in the special_tokens_map
     if isinstance(tokenizer, LlamaTokenizer) or isinstance(tokenizer, LlamaTokenizerFast):
+        logger.info("added pad in the old line")
         num_added_tokens = tokenizer.add_special_tokens({
             "bos_token": "<s>",
             "eos_token": "</s>",
@@ -600,6 +607,8 @@ def main():
             resume_step -= starting_epoch * len(train_dataloader)
 
     # update the progress_bar if load from checkpoint
+    
+
     progress_bar.update(completed_steps)
 
     for epoch in range(starting_epoch, args.num_train_epochs):

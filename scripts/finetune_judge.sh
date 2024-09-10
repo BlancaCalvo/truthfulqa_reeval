@@ -6,8 +6,8 @@ GRADIENT_ACC_STEPS=$(($TOTAL_BATCH_SIZE/$NUM_GPUS/$BATCH_SIZE_PER_GPU))
 
 LR=5e-6
 for JUDGE_TYPE in "truth" "info"; do
-    MODEL_NAME=llama2_${MODEL_SIZE}_${JUDGE_TYPE}_judge_final
-    OUTPUT_DIR=output/${MODEL_NAME}/
+    MODEL_NAME=llama3-1_${MODEL_SIZE}_${JUDGE_TYPE}_judge_final
+    OUTPUT_DIR=judge/judge_models/${MODEL_NAME}/
 
     echo "Training LLaMa ${MODEL_SIZE} for ${JUDGE_TYPE} prediction."
     echo "Using $NUM_GPUS GPUs, $BATCH_SIZE_PER_GPU batch size per GPU, $GRADIENT_ACC_STEPS gradient accumulation steps"
@@ -20,7 +20,7 @@ for JUDGE_TYPE in "truth" "info"; do
         --use_deepspeed \
         --deepspeed_config_file ds_configs/stage3_no_offloading_accelerate.conf \
         src/finetune_llama.py \
-        --model_name_or_path ../hf_llama2_models/${MODEL_SIZE} \
+        --model_name_or_path meta-llama/Meta-Llama-3-8B \
         --use_flash_attn \
         --use_slow_tokenizer \
         --train_file data/finetune_${JUDGE_TYPE}.jsonl \
