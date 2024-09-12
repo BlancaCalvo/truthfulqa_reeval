@@ -34,6 +34,7 @@ from transformers import (
     BitsAndBytesConfig,
 )
 from peft import LoraConfig, TaskType, get_peft_model, prepare_model_for_kbit_training
+import wandb
 
 
 logger = get_logger(__name__)
@@ -295,6 +296,8 @@ def main():
     if args.with_tracking:
         accelerator_log_kwargs["log_with"] = args.report_to
         accelerator_log_kwargs["project_dir"] = args.output_dir
+
+    wandb.init(project="allenai_truthfulqa_judge")
 
     accelerator = Accelerator(gradient_accumulation_steps=args.gradient_accumulation_steps, **accelerator_log_kwargs)
     # Make one log on every process with the configuration for debugging.

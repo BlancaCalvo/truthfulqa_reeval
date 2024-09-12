@@ -11,7 +11,7 @@ export PATH=$PATH":/gaueko0/users/bcalvo/"
 export PATH=$PATH":/gaueko0/users/bcalvo/.local/bin/"
 export PATH=/usr/local/cuda-12.1/bin:$PATH
 
-source env/bin/activate
+source ../git_truthfulqa-multi/env/bin/activate
 
 %HF_HOME='/ixadata/users/bcalvo/cache'
 
