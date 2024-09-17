@@ -21,7 +21,7 @@ for JUDGE_TYPE in "truth"; do
         --num_processes $NUM_GPUS \
         --use_deepspeed \
         --deepspeed_config_file ds_configs/stage3_no_offloading_accelerate.conf \
-        src/finetune_llama.py \
+        src/finetune_instruct.py \
         --model_name_or_path $MODEL \
         --use_flash_attn \
         --use_slow_tokenizer \
@@ -34,9 +34,10 @@ for JUDGE_TYPE in "truth"; do
         --lr_scheduler_type linear \
         --warmup_ratio 0.03 \
         --weight_decay 0. \
-        --num_train_epochs 5 \
+        --num_train_epochs 4 \
         --output_dir ${OUTPUT_DIR} \
         --with_tracking \
         --report_to wandb \
-        --logging_steps 1
+        --logging_steps 1 \
+        --instruct
 done
