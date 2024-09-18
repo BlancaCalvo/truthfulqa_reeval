@@ -34,7 +34,7 @@ for JUDGE_TYPE in "truth"; do
         --lr_scheduler_type linear \
         --warmup_ratio 0.03 \
         --weight_decay 0. \
-        --num_train_epochs 4 \
+        --num_train_epochs 5 \
         --output_dir ${OUTPUT_DIR} \
         --with_tracking \
         --report_to wandb \
