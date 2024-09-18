@@ -13,6 +13,12 @@ export PATH=/usr/local/cuda-12.1/bin:$PATH
 
 source ../truthfulqa-multi/new_env/bin/activate
 
-#sh scripts/finetune.sh gemma9b google/gemma-2-9b data/finetune_truth.jsonl
+sh scripts/finetune.sh llama-3-truth-new meta-llama/Meta-Llama-3-8B data/finetune_truth.jsonl
 
-sh scripts/finetune_instruct.sh instruct_trial meta-llama/Meta-Llama-3.1-8B-Instruct data/finetune_truth.jsonl
+sh scripts/finetune.sh llama3.1.2 meta-llama/Meta-Llama-3.1-8B data/finetune_truth.jsonl
+
+sh scripts/finetune.sh llama3.1_multi meta-llama/Meta-Llama-3.1-8B data/finetune_truth_multi.jsonl
+
+sh scripts/finetune.sh gemma9b google/gemma-2-9b data/finetune_truth.jsonl
+
+sh scripts/finetune_instruct.sh llama3.1_instruct meta-llama/Meta-Llama-3.1-8B-Instruct data/finetune_truth.jsonl
