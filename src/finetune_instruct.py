@@ -267,30 +267,34 @@ def save_with_accelerate(accelerator, model, tokenizer, output_dir, args):
         )
 
 def format_chat_template(example, tokenizer, max_seq_length=None):
+        prompt = example["prompt"][:-5]
+        completion = example["completion"][1:]
         formated_sen_chat = [
         {"role": "system", "content": "Is the answer true? Answer yes or no."},
-        {"role": "user", "content":example["prompt"]},
-        {"role": "assistant", "content":example['completion']},
+        {"role": "user", "content":prompt},
+        {"role": "assistant", "content":completion},
         ]
 
-        example_text = tokenizer.apply_chat_template(formated_sen_chat, add_generation_prompt=True, tokenize=False)
+        example_text = tokenizer.apply_chat_template(formated_sen_chat, add_generation_prompt=False, tokenize=False)
         tokenized_example = tokenizer(example_text, return_tensors='pt', max_length=max_seq_length, truncation=True)
         input_ids = tokenized_example.input_ids
         labels = input_ids.clone()
         
         formated_no_assistant = [
         {"role": "system", "content": "Is the answer true? Answer yes or no."},
-        {"role": "user", "content":example["prompt"]},
+        {"role": "user", "content":prompt},
         ]
-        prompt = tokenizer.apply_chat_template(formated_no_assistant, add_generation_prompt=True, tokenize=False)
+        prompt = tokenizer.apply_chat_template(formated_no_assistant, add_generation_prompt=False, tokenize=False)
         tokenized_prompt = tokenizer(prompt, return_tensors='pt', max_length=max_seq_length, truncation=True)
         # mask the prompt part for avoiding loss
-        labels[:, :tokenized_prompt.input_ids.shape[1]] = -100
+        #logger.info('ONLY PROMPT '+tokenizer.batch_decode(tokenized_prompt.input_ids, skip_special_tokens=True, skip_prompt=True)[0])
+        #labels[:, :tokenized_prompt.input_ids.shape[1]] = -100 # this line does not work
+        only_answer = labels[:, tokenized_prompt.input_ids.shape[1]:]
 
         attention_mask = torch.ones_like(input_ids)
         return {
             'input_ids': input_ids.flatten(),
-            'labels': labels.flatten(),
+            'labels': only_answer.flatten(),
             'attention_mask': attention_mask.flatten(),
         }
 
@@ -413,7 +417,7 @@ def main():
         logger.info("added pad in the new lines")
         logger.info(type(tokenizer))
         tokenizer.add_special_tokens({'pad_token': "<pad>"})
-        #model.resize_token_embeddings(len(tokenizer))
+        model.resize_token_embeddings(len(tokenizer))
 
 
     # no default pad token for llama!
