@@ -32,6 +32,9 @@ from transformers import (
     GPT2Tokenizer,
     OPTForCausalLM,
     BitsAndBytesConfig,
+    GemmaForCausalLM,
+    Gemma2ForCausalLM,
+    LlamaForCausalLM,
 )
 from peft import LoraConfig, TaskType, get_peft_model, prepare_model_for_kbit_training
 import wandb
@@ -266,8 +269,37 @@ def save_with_accelerate(accelerator, model, tokenizer, output_dir, args):
             output_dir, is_main_process=accelerator.is_main_process, save_function=accelerator.save, state_dict=state_dict
         )
 
-def format_chat_template(example, tokenizer, max_seq_length=None):
-        prompt = example["prompt"][:-5]
+def gemma_format_chat_template(example, tokenizer, max_seq_length=None):
+        prompt = example["prompt"][:-5] # TODO: this should change if using instruct fot info
+        completion = example["completion"][1:]
+        formated_sen_chat = [
+        {"role": "user", "content":"Is the answer true? Answer yes or no.\n"+prompt},
+        {"role": "assistant", "content":completion},
+        ]
+
+        example_text = tokenizer.apply_chat_template(formated_sen_chat, add_generation_prompt=False, tokenize=False)
+        tokenized_example = tokenizer(example_text, return_tensors='pt', max_length=max_seq_length, truncation=True)
+        input_ids = tokenized_example.input_ids
+        labels = input_ids.clone()
+        
+        formated_no_assistant = [
+        {"role": "user", "content":"Is the answer true? Answer yes or no.\n"+prompt},
+        ]
+        prompt = tokenizer.apply_chat_template(formated_no_assistant, add_generation_prompt=False, tokenize=False)
+        tokenized_prompt = tokenizer(prompt, return_tensors='pt', max_length=max_seq_length, truncation=True)
+        # mask the prompt part for avoiding loss
+        labels[:, :tokenized_prompt.input_ids.shape[1]] = -100 
+        #only_answer = labels[:, tokenized_prompt.input_ids.shape[1]:]
+
+        attention_mask = torch.ones_like(input_ids)
+        return {
+            'input_ids': input_ids.flatten(),
+            'labels': labels.flatten(),
+            'attention_mask': attention_mask.flatten(),
+        }
+
+def llama_format_chat_template(example, tokenizer, max_seq_length=None):
+        prompt = example["prompt"][:-5] # TODO: this should change if using instruct fot info
         completion = example["completion"][1:]
         formated_sen_chat = [
         {"role": "system", "content": "Is the answer true? Answer yes or no."},
@@ -287,14 +319,13 @@ def format_chat_template(example, tokenizer, max_seq_length=None):
         prompt = tokenizer.apply_chat_template(formated_no_assistant, add_generation_prompt=False, tokenize=False)
         tokenized_prompt = tokenizer(prompt, return_tensors='pt', max_length=max_seq_length, truncation=True)
         # mask the prompt part for avoiding loss
-        #logger.info('ONLY PROMPT '+tokenizer.batch_decode(tokenized_prompt.input_ids, skip_special_tokens=True, skip_prompt=True)[0])
-        #labels[:, :tokenized_prompt.input_ids.shape[1]] = -100 # this line does not work
-        only_answer = labels[:, tokenized_prompt.input_ids.shape[1]:]
+        labels[:, :tokenized_prompt.input_ids.shape[1]] = -100 
+        #only_answer = labels[:, tokenized_prompt.input_ids.shape[1]:]
 
         attention_mask = torch.ones_like(input_ids)
         return {
             'input_ids': input_ids.flatten(),
-            'labels': only_answer.flatten(),
+            'labels': labels.flatten(),
             'attention_mask': attention_mask.flatten(),
         }
 
@@ -473,11 +504,20 @@ def main():
     
 
     if args.instruct:
-        encode_function = partial(
-            format_chat_template,
-            tokenizer=tokenizer,
-            max_seq_length=args.max_seq_length,
-        )
+        if isinstance(model, GemmaForCausalLM) or isinstance(model, Gemma2ForCausalLM):
+            encode_function = partial(
+                gemma_format_chat_template,
+                tokenizer=tokenizer,
+                max_seq_length=args.max_seq_length,
+            )
+        elif isinstance(model, LlamaForCausalLM):
+            encode_function = partial(
+                gemma_format_chat_template,
+                tokenizer=tokenizer,
+                max_seq_length=args.max_seq_length,
+            )
+        else:
+            raise ValueError('This model type has not been considered: '+type(model))
     else:
         encode_function = partial(
             encode_prompt_completion_example,
