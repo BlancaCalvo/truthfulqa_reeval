@@ -163,3 +163,5 @@ cython_debug/
 #.idea/
 
 logs
+
+data/*multi*
