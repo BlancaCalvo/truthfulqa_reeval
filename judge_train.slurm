@@ -7,10 +7,6 @@
 #SBATCH --output=logs/train_%j.out
 #SBATCH --error=logs/train_%j.err
 
-export PATH=$PATH":/gaueko0/users/bcalvo/"
-export PATH=$PATH":/gaueko0/users/bcalvo/.local/bin/"
-export PATH=/usr/local/cuda-12.1/bin:$PATH
-
 source ../truthfulqa-multi/new_env/bin/activate
 
 # sh scripts/finetune.sh llama-3-truth-new meta-llama/Meta-Llama-3-8B data/finetune_truth.jsonl

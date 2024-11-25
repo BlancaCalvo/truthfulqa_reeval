@@ -512,7 +512,7 @@ def main():
             )
         elif isinstance(model, LlamaForCausalLM):
             encode_function = partial(
-                gemma_format_chat_template,
+                llama_format_chat_template,
                 tokenizer=tokenizer,
                 max_seq_length=args.max_seq_length,
             )
