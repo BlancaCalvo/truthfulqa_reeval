@@ -23,8 +23,10 @@ source ../truthfulqa-multi/new_env/bin/activate
 
 # sh scripts/finetune.sh llama-3-multi meta-llama/Meta-Llama-3-8B data/finetune_truth_multi.jsonl
 
-sh scripts/finetune_instruct.sh multi_gemma9b_instruct google/gemma-2-9b-it data/finetune_truth_multi.jsonl
+#sh scripts/finetune_instruct.sh multi_gemma9b_instruct google/gemma-2-9b-it data/finetune_truth_multi.jsonl
 
 # sh scripts/finetune_instruct.sh gemma9b_instruct google/gemma-2-9b-it data/finetune_truth.jsonl
 
 #sh scripts/finetune_instruct.sh multi_llama3.1_instruct meta-llama/Meta-Llama-3.1-8B-Instruct data/finetune_truth_multi.jsonl
+
+sh scripts/finetune_instruct_info.sh multi_gemma9b_instruct google/gemma-2-9b-it data/finetune_info_multi.jsonl
